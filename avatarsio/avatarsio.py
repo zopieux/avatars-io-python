@@ -80,19 +80,20 @@ class AvatarsIO(object):
 		file.seek(0)
 		response = requests.post(AvatarsIO.base_uri + '/v1/token',
 			headers={
-				'x-client-id': self.client_id,
+				'x-client_id': self.client_id,
 				'authorization': 'OAuth %s' % self.access_token
 			},
-			data={
+			data=json.dumps({
 				'filename': file_name,
 				'md5': block_md5(file),
 				'size': file_size,
 				'path': identifer,
-			}
+			})
 		)
 		print response.request.headers
 
 		data = response_to_json(response)
+		print data
 		if not 'upload_info' in data['data']:
 			return data['data']['url']
 
@@ -111,7 +112,7 @@ class AvatarsIO(object):
 
 		response = requests.post(AvatarsIO.base_uri + 'v1/token/%s/complete' % data['id'],
 			headers={
-				'x-client-id': self.client_id,
+				'x-client_id': self.client_id,
 				'authorization': 'OAuth %s' % self.access_token,
 			})
 		return response_to_json(response)['data']
