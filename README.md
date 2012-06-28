@@ -30,26 +30,28 @@ The lib is useful for custom avatar upload. You need first to
 [register an app](http://apps.getchute.com/apps/new) on Chute. Then, it's quite
 straightforward:
 
-    >>> from avatarsio import AvatarsIO
-    >>> avtio = AvatarsIO('my-client-id', 'my-access-token')
+```python
+>>> from avatarsio import AvatarsIO
+>>> avtio = AvatarsIO('my-client-id', 'my-access-token')
 
-    # With a file name:
-    >>> avtio.upload('kitten.png')
-    "http://avatars.io/4fb6de143d242d44da000001/hashashash"
+# With a file name:
+>>> avtio.upload('kitten.png')
+"http://avatars.io/4fb6de143d242d44da000001/hashashash"
 
-    # With a file object:
-    >>> fobj = open('kitten.png', 'rb')
-    >>> avtio.upload(fobj)
-    "http://avatars.io/4fb6de143d242d44da000001/hashashash"
+# With a file object:
+>>> fobj = open('kitten.png', 'rb')
+>>> avtio.upload(fobj)
+"http://avatars.io/4fb6de143d242d44da000001/hashashash"
 
-    # You can give a custom identifer:
-    >>> avtio.upload('kitten.png', 'my-identifier')
-    "http://avatars.io/4fb6de143d242d44da000001/my-identifier"
+# You can give a custom identifer:
+>>> avtio.upload('kitten.png', 'my-identifier')
+"http://avatars.io/4fb6de143d242d44da000001/my-identifier"
 
-    # And obviously, build sersvice avatar URLs:
-    # (but sersiouly, you don't need the lib for that)
-    >>> AvatarsIO.avatar_url('twitter', 'my-identifier')
-    "http://avatars.io/twitter/my-identifier"
+# And obviously, build sersvice avatar URLs:
+# (but sersiouly, you don't need the lib for that)
+>>> AvatarsIO.avatar_url('twitter', 'my-identifier')
+"http://avatars.io/twitter/my-identifier"
+```
 
 Licence
 -------
