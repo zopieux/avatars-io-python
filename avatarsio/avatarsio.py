@@ -1,17 +1,19 @@
+#!/usr/bin/env python
 # coding: utf-8
 
-# Python 2; doesn't fail in Python 3
-from __future__ import unicode_literals
+# Copyright 2008-2012 Alexandre `Zopieux` Macabies
+# This module is part of avatarsio and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import os
 import json
 import requests
-from hashlib import md5
+import hashlib
 
 class AvatarsIOException(Exception): pass
 
-def block_md5(fileobj, block_size=2**15):
-	hashed = md5()
+def block_md5(fileobj, block_size=2**18):
+	hashed = hashlib.md5()
 	while True:
 		data = fileobj.read(block_size)
 		if not data:
@@ -23,7 +25,6 @@ def response_to_json(response, encoding='utf-8'):
 	try:
 		return json.loads(response.content.decode('utf-8'))
 	except ValueError:
-		print response.content
 		raise AvatarsIOException("Malformed response from avatars.io")
 
 class AvatarsIO(object):
@@ -31,36 +32,41 @@ class AvatarsIO(object):
 		Usage:
 		>>> avtio = AvatarsIO('my-client-id', 'my-access-token')
 
-		With a file name:
-		>>> upload_id = avtio.upload(fname)
+		# With a file name:
+		>>> avtio.upload('kitten.png')
 		"http://avatars.io/4fb6de143d242d44da000001/hashashash"
 
-		With a file object:
-		>>> fobj = open(fname, 'rb')
-		>>> upload_id = avtio.upload(fobj)
+		# With a file object:
+		>>> fobj = open('kitten.png', 'rb')
+		>>> avtio.upload(fobj)
 		"http://avatars.io/4fb6de143d242d44da000001/hashashash"
 
-		You can give a custom identifer:
-		>>> upload_id = avtio.upload(fname, 'my-identifier')
+		# You can give a custom identifer:
+		>>> avtio.upload('kitten.png', 'my-identifier')
 		"http://avatars.io/4fb6de143d242d44da000001/my-identifier"
 
-		Build custom avatar URL:
-		>>> url = AvatarsIO.avatar_url('twitter', 'my-identifier')
+		# And obviously, build sersvice avatar URLs:
+		# (but sersiouly, you don't need the lib for that)
+		>>> AvatarsIO.avatar_url('twitter', 'my-identifier')
 		"http://avatars.io/twitter/my-identifier"
 	"""
 	base_uri = 'http://avatars.io'
 
 	def __init__(self, client_id, access_token):
+		"""
+			You need a Chute app to get your client_id (called "App ID")
+			and access_token.
+			See http://apps.getchute.com/apps/new
+		"""
 		self.client_id = client_id
 		self.access_token = access_token
 
 	def upload(self, file, identifer=''):
 		"""
-			Uploads a file to Avarats.IO.
+			Uploads a file to Avatars.io.
 			`file` can be either a file path or a file object with a `read`
 			attribute.
 		"""
-
 		try:
 			should_open = isinstance(file, basestring)
 		except NameError: # Python 3
@@ -83,20 +89,20 @@ class AvatarsIO(object):
 				'x-client_id': self.client_id,
 				'authorization': 'OAuth %s' % self.access_token
 			},
-			data=json.dumps({
+			data=json.dumps({'data': {
 				'filename': file_name,
 				'md5': block_md5(file),
 				'size': file_size,
 				'path': identifer,
-			})
+			}})
 		)
-		print response.request.headers
 
 		data = response_to_json(response)
-		print data
+
 		if not 'upload_info' in data['data']:
 			return data['data']['url']
 
+		id = data['data']['id']
 		infos = data['data']['upload_info']
 
 		file.seek(0)
@@ -107,14 +113,15 @@ class AvatarsIO(object):
 				'content-type': infos.get('content-type'),
 				'x-amz-acl': 'public-read',
 			},
-			files={'upload': file}
+			files={'file': file}
 		)
 
-		response = requests.post(AvatarsIO.base_uri + 'v1/token/%s/complete' % data['id'],
+		response = requests.post(AvatarsIO.base_uri + '/v1/token/%s/complete' % id,
 			headers={
 				'x-client_id': self.client_id,
 				'authorization': 'OAuth %s' % self.access_token,
-			})
+			}
+		)
 		return response_to_json(response)['data']
 
 	@staticmethod
