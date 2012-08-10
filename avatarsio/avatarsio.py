@@ -89,12 +89,12 @@ class AvatarsIO(object):
 				'x-client_id': self.client_id,
 				'authorization': 'OAuth %s' % self.access_token
 			},
-			data=json.dumps({'data': {
-				'filename': file_name,
-				'md5': block_md5(file),
-				'size': file_size,
-				'path': identifer,
-			}})
+			data={
+				'data[filename]': file_name,
+				'data[md5]': block_md5(file),
+				'data[size]': file_size,
+				'data[path]': identifer
+			}
 		)
 
 		data = response_to_json(response)
@@ -110,10 +110,10 @@ class AvatarsIO(object):
 			headers={
 				'authorization': infos.get('signature'),
 				'date': infos.get('date'),
-				'content-type': infos.get('content-type'),
+				'content-type': infos.get('content_type'),
 				'x-amz-acl': 'public-read',
 			},
-			files={'file': file}
+			data=file
 		)
 
 		response = requests.post(AvatarsIO.base_uri + '/v1/token/%s/complete' % id,
